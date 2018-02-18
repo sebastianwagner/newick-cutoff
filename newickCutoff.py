@@ -8,12 +8,18 @@ import sys
 import logging
 import argparse
 
+cutoff = 75
+
 def perclade(clade):
+    if clade.confidence:
+        if clade.confidence < cutoff:
+            clade.confidence = None
     return clade
 
 def walktree(clade):
+    clade = perclade(clade)
     if clade.name:
-        clade = perclade(clade)
+        pass
     # fix broken confidence writer when working with PAUP* style files.
     # TreeGraph could not handle confidence behind colons
     # @link http://wiki.christophchamp.com/index.php?title=Newick_phylogenetic_tree_format
@@ -47,7 +53,7 @@ def main():
                         help='a Newick treefile')
     parser.add_argument('outfile', nargs='?', type=argparse.FileType('w'),
                         help='changed Newick outfile')
-    parser.add_argument('--cuttoff', action='store_true', default=None,
+    parser.add_argument('--cutoff', dest='cutoff', nargs='?', type=int, default=75,
                         help='value at or beneath which no inner node'
                              'confidences are snown any more')
     options = parser.parse_args()
@@ -62,10 +68,12 @@ def main():
     log = logging.getLogger('LOGGER_NAME')
 
     infile = options.infile or sys.stdin
+    outfile = options.outfile or sys.stdout
+    cutoff = options.cutoff
     trees = readtrees(infile)
     trees = relabeltree(trees)
 
-    NewickIO.write(trees, sys.stdout)
+    NewickIO.write(trees, outfile)
 
 
 if __name__ == '__main__':
