@@ -34,6 +34,8 @@ def relabeltree(trees):
     return outtrees
 
 def readtrees(treefile):
+    if treefile == '-':
+        return NewickIO.parse(sys.stdin)
     return Phylo.parse(treefile, 'newick')
 
 stdout_handler = logging.StreamHandler(sys.stderr)
