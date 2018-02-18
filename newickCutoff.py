@@ -38,19 +38,25 @@ def readtrees(treefile):
         return NewickIO.parse(sys.stdin)
     return Phylo.parse(treefile, 'newick')
 
-stdout_handler = logging.StreamHandler(sys.stderr)
-handlers = [stdout_handler]
-logging.basicConfig(
-    level=logging.INFO,
-    format='[%(levelname)s - %(message)s]',
-    handlers=handlers
-)
-log = logging.getLogger('LOGGER_NAME')
+
+def main():
+    stdout_handler = logging.StreamHandler(sys.stderr)
+    handlers = [stdout_handler]
+    logging.basicConfig(
+        level=logging.INFO,
+        format='[%(levelname)s - %(message)s]',
+        handlers=handlers
+    )
+    log = logging.getLogger('LOGGER_NAME')
+
+    treefile = sys.argv[1]
+    trees = readtrees(treefile)
+
+    trees = relabeltree(trees)
+
+    NewickIO.write(trees, sys.stdout)
 
 
-treefile = sys.argv[1]
-trees = readtrees(treefile)
+if __name__ == '__main__':
+    main()
 
-trees = relabeltree(trees)
-
-NewickIO.write(trees, sys.stdout)
