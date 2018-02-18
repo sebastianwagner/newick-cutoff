@@ -6,6 +6,7 @@ from Bio import Phylo
 from Bio.Phylo import NewickIO  # directly called due to stdout usage
 import sys
 import logging
+import argparse
 
 def perclade(clade):
     return clade
@@ -34,12 +35,23 @@ def relabeltree(trees):
     return outtrees
 
 def readtrees(treefile):
-    if treefile == '-':
-        return NewickIO.parse(sys.stdin)
     return Phylo.parse(treefile, 'newick')
 
 
 def main():
+    prog = sys.argv[0]
+    description = ('Parse newick tree an perform action on'
+                   'each non-root node')
+    parser = argparse.ArgumentParser(prog=prog, description=description)
+    parser.add_argument('infile', nargs='?', type=argparse.FileType(),
+                        help='a Newick treefile')
+    parser.add_argument('outfile', nargs='?', type=argparse.FileType('w'),
+                        help='changed Newick outfile')
+    parser.add_argument('--cuttoff', action='store_true', default=None,
+                        help='value at or beneath which no inner node'
+                             'confidences are snown any more')
+    options = parser.parse_args()
+
     stdout_handler = logging.StreamHandler(sys.stderr)
     handlers = [stdout_handler]
     logging.basicConfig(
@@ -49,9 +61,8 @@ def main():
     )
     log = logging.getLogger('LOGGER_NAME')
 
-    treefile = sys.argv[1]
-    trees = readtrees(treefile)
-
+    infile = options.infile or sys.stdin
+    trees = readtrees(infile)
     trees = relabeltree(trees)
 
     NewickIO.write(trees, sys.stdout)
